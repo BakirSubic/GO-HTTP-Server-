@@ -1,1 +1,7 @@
-package GO_HTTP_Server_
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Test")
+}
