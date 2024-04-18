@@ -35,9 +35,11 @@ func readHTTPRequest(request string) httpRequest {
 	path := pathAndVersion[:spaceIndex]
 
 	lastSpaceIndex := strings.LastIndex(requestLine, " ")
+
 	if lastSpaceIndex == -1 {
 		panic("400 Bad Request")
 	}
+
 	httpVersion := strings.TrimSpace(requestLine[lastSpaceIndex:])
 
 	if method == "" || path == "" || httpVersion == "" {
@@ -61,9 +63,9 @@ func readHTTPRequest(request string) httpRequest {
 		Headers:     requestHeaders,
 	}
 
-	println("Method: ", req.Method)
-	println("Path: ", req.Path)
-	println("HTTP Version: ", req.HTTPVersion)
+	println("Method:", req.Method)
+	println("Path:", req.Path)
+	println("HTTP Version:", req.HTTPVersion)
 	for key, value := range req.Headers {
 		println(key+":", value)
 	}
