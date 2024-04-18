@@ -1,35 +1,77 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 )
 
-func readHTTPRequest(request string) {
+type httpRequest struct {
+	Method      string
+	Path        string
+	HTTPVersion string
+	Headers     map[string]string
+}
+
+func readHTTPRequest(request string) httpRequest {
 	lines := strings.Split(request, "\n")
 
 	requestLine := lines[0]
 
-	requestHeader := make(map[string]string)
+	methodEnd := strings.IndexByte(requestLine, ' ')
+
+	if methodEnd == -1 {
+		panic("400 Bad Request")
+	}
+
+	method := requestLine[:methodEnd]
+
+	pathAndVersion := strings.TrimSpace(requestLine[methodEnd:])
+
+	spaceIndex := strings.IndexByte(pathAndVersion, ' ')
+
+	if spaceIndex == -1 {
+		panic("400 Bad Request")
+	}
+
+	path := pathAndVersion[:spaceIndex]
+
+	lastSpaceIndex := strings.LastIndex(requestLine, " ")
+	if lastSpaceIndex == -1 {
+		panic("400 Bad Request")
+	}
+	httpVersion := strings.TrimSpace(requestLine[lastSpaceIndex:])
+
+	if method == "" || path == "" || httpVersion == "" {
+		panic("400 Bad Request")
+	}
+
+	requestHeaders := make(map[string]string)
 
 	for i := 1; lines[i] != ""; i++ {
 		keyName := lines[i][:strings.IndexByte(lines[i], ':')]
-		requestHeader[keyName] = strings.TrimPrefix(lines[i], keyName+": ")
+		requestHeaders[keyName] = strings.TrimPrefix(lines[i], keyName+": ")
+		if requestHeaders[keyName] == " " {
+			panic("400 Bad Request")
+		}
 	}
 
-	fmt.Println("RequestLine: ")
-	fmt.Println(requestLine, "\n")
-
-	fmt.Println("Request Header:")
-	for key, value := range requestHeader {
-		fmt.Println(key, ":", value, "\n")
+	req := httpRequest{
+		Method:      method,
+		Path:        path,
+		HTTPVersion: httpVersion,
+		Headers:     requestHeaders,
 	}
 
+	println("Method: ", req.Method)
+	println("Path: ", req.Path)
+	println("HTTP Version: ", req.HTTPVersion)
+	for key, value := range req.Headers {
+		println(key+":", value)
+	}
+
+	return req
 }
 
 func main() {
-	fmt.Println("Test")
-
 	readHTTPRequest("GET /hello.htm HTTP/1.1\n" +
 		"User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\n" +
 		"Host: www.tutorialspoint.com\n" +
